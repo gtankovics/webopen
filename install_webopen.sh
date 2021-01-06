@@ -25,3 +25,10 @@ else
 	rm /usr/local/bin/webopen
 	ln -s $userBin/webopen /usr/local/bin/webopen
 end
+
+echo "upsert autocomplete file"
+if test -d $__fish_config_dir/functions
+	cp ./completions/webopen.fish $__fish_config_dir/functions
+else
+	echo "fish functions path unknown."
+end
