@@ -1,17 +1,18 @@
 #!/usr/bin/env fish
 
 set GCP_CONSOLE_BASE_URL "https://console.cloud.google.com"
-set GCP_PROJECT_QUERY "?project=$GOOGLE_PROJECT"
+set GCP_PROJECT_QUERY "project=$GOOGLE_PROJECT"
 set -q JIRA_BASE_URL || set JIRA_BASE_URL "[add the url here]"
 
 function _showHelp
 	echo "Show Help"
 end
 
-# function _doGKEOpen
-# 	set -l _project $GOOGLE_PROJECT
-# 	open https://console.cloud.google.com/kubernetes/list\?project=$_project
-# end
+function _doGCPOpen
+	set -l _url $argv[1]
+	set -l _query (string join "&" $GCP_PROJECT_QUERY $argv[2..-1]])
+	_doOpen $_url $_query
+end
 
 # function _doGSOpen
 # 	set -l _project $GOOGLE_PROJECT
@@ -92,30 +93,32 @@ if test -n "$argv[1]"
 		case "gcp"
 			# Open Google Cloud Project's Home
 			echo "Open Google Cloud Platform Console [$GOOGLE_PROJECT]"
-			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "home" "dashboard")
-			set -l _query "project=$GOOGLE_PROJECT"
-			_doOpen $_baseUrl $_query
+			set -l _url (string join "/" $GCP_CONSOLE_BASE_URL "home" "dashboard")
+			_doGCPOpen $_url
 		case "gke"
 			# Open Google Kubernetes Engine
-			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "kubernetes" "list")
+			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "kubernetes")
 			if test -n "$argv[2]"
 				switch "$argv[2]"
 					# TODO handling nodes, workflows, etc.
+					case "no" or "nodes"
+						set _baseUrl $_baseUrl"/clusters/details/$GOOGLE_ZONE/$K8S_CLUSTER_SHORT/nodes"
 					case \*
 						echo "$argv[2] is unknown."
 				end
 			else
-				_doOpen $_baseUrl
+				set -l _baseUrl $_baseUrl"/list"
 			end
+			_doGCPOpen $_baseUrl
 		case "gle"
 			# Open Google Cloud Logging Explorer
 			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "logs" "query")
 			# TODO open exact filter
-			_doOpen $_baseUrl
+			_doGCPOpen $_baseUrl
 		case "gs"
 			# Open Google Cloud Storage
 			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "storage" "browser")
-			_doOpen $_baseUrl $_query
+			_doGCPOpen $_baseUrl $_query
 			# TODO open exact bucket exp. 
 			# webopen gs [TENANT_ID] or webopen gs [domainPrefix]
 		case "jira"
