@@ -1,7 +1,8 @@
 #!/usr/bin/env fish
 
 set -l userBin ~/bin
-set -l execName "webopen.sh"
+set -l execName "webopen"
+set -l execScript $execName".sh"
 
 function checkLink
 	if not test -L /usr/local/bin/$execName
@@ -19,20 +20,22 @@ end
 
 if not test -f "$userBin/$execName"
 	echo "copy '$execName' to $userBin"
-	cp $execName ~/bin/$execName
+	cp $execScript ~/bin/$execName
 	checkLink
 else
-	if not diff -y -q ./$execName $userBin/$execName
+	if not diff -y -q ./$execScript $userBin/$execName
 		if yesno "Show differencies?"
-			diff ./$execName $userBin/$execName
+			diff ./$execScript $userBin/$execName
 		end
 		if yesno "Do you want to create $execName?"
-			cp ./$execName $userBin/$execName
+			cp ./$execScript $userBin/$execName
 			echo "$execName copied."
 			checkLink
 		else
 			echo "$execName skipped."
 		end
+	else
+		echo "$execName is the latest."
 	end
 end
 
