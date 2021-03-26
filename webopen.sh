@@ -78,7 +78,7 @@ if test -n "$argv[1]"
 						_doGitHubOpen releases
 					case "ji" or "jira"
 						if string match -q -r ".*SAAS|saas-[0-9].*" (git branch --show-current)
-							set -l _issueNumber (git branch --show-current | sed -n 's/.*\(BIMC-[0-9]*\).*/\1/p')
+							set -l _issueNumber (git branch --show-current | sed -n 's/.*\(SAAS-[0-9]*\).*/\1/p')
 							set -l _url (string join "/" $JIRA_BASE_URL "browse" $_issueNumber)
 							_doOpen $_url
 						else
