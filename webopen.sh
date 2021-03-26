@@ -10,7 +10,7 @@ end
 
 function _doGCPOpen
 	set -l _url $argv[1]
-	set -l _query (string join "&" $GCP_PROJECT_QUERY $argv[2..-1]])
+	set -l _query (string join "&" $argv[2..-1] $GCP_PROJECT_QUERY)
 	_doOpen $_url $_query
 end
 
@@ -77,7 +77,7 @@ if test -n "$argv[1]"
 					case "rel" or "releases"
 						_doGitHubOpen releases
 					case "ji" or "jira"
-						if string match -q -r ".*BIMC|bimc-[0-9].*" (git branch --show-current)
+						if string match -q -r ".*SAAS|saas-[0-9].*" (git branch --show-current)
 							set -l _issueNumber (git branch --show-current | sed -n 's/.*\(BIMC-[0-9]*\).*/\1/p')
 							set -l _url (string join "/" $JIRA_BASE_URL "browse" $_issueNumber)
 							_doOpen $_url
@@ -113,8 +113,17 @@ if test -n "$argv[1]"
 		case "gle"
 			# Open Google Cloud Logging Explorer
 			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "logs" "query")
+			if test -n "$argv[2]" 
+				if string match -q -r "[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}" "$argv[2]"
+					set -l _podId $argv[2] "-0"
+					set _query ";query=resource.type%3D%22k8s_container%22%0Aresource.labels.pod_name%3D%22"$_podId
+					# https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.pod_name%3D%2231fd66d4-71e4-4e26-9766-b86ebef558d5-0%22?authuser=0&project=bc-saas-production-us
+				else
+					echo "[$argv[2]] is unknown."
+				end
+			end
 			# TODO open exact filter
-			_doGCPOpen $_baseUrl
+			_doGCPOpen $_baseUrl $_query
 		case "gs"
 			# Open Google Cloud Storage
 			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "storage" "browser")
@@ -135,6 +144,7 @@ if test -n "$argv[1]"
 				_doOpen $JIRA_BASE_URL
 			end
 		case \*
+			echo "Unknown option [$argv[1]]."
 			_showHelp
 	end
 else
