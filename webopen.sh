@@ -43,15 +43,23 @@ function _doGitHubOpen
 		if test -n "$_remoteUrl"
 			switch "$argv[1]"
 				case "pullrequests"
-					set -l _url (string join "/" $_remoteUrl "pulls")
+					set _url (string join "/" $_remoteUrl "pulls")
 					_doOpen $_url
 				case "releases"
-					set -l _url (string join "/" $_remoteUrl "releases")
+					set _url (string join "/" $_remoteUrl "releases")
 					_doOpen $_url
-				case \*
+				case "branch"
 					set -l _branch (git branch --show-current)
-					set -l remoteUrl (string join "/" "$_remoteUrl" "tree" "$_branch")
-					_doOpen $_remoteUrl
+					if contains $_branch (git branch -r | cut -d / -f 2,3)
+						set _url (string join "/" "$_remoteUrl" "tree" "$_branch")
+					else
+						echo "This branch has no remote upstream."
+					end
+			end
+			if test -n "$_url"
+				_doOpen $_url
+			else
+				_doOpen $_remoteUrl
 			end
 		else
 			echo "There is no remote. It's a local git repo."
@@ -84,6 +92,8 @@ if test -n "$argv[1]"
 						else
 							echo "JIRA issue number is missing from branch name."
 						end
+					case "br" or "branch"
+						_doGitHubOpen branch
 					case \*
 						echo "[$argv[2]] is unknown."
 				end
