@@ -113,6 +113,8 @@ if test -n "$argv[1]"
 					# TODO handling nodes, workflows, etc.
 					case "no" or "nodes"
 						set _baseUrl $_baseUrl"/clusters/details/$GOOGLE_ZONE/$K8S_CLUSTER_SHORT/nodes"
+					case "wo" or "workloads"
+						set _baseUrl $_baseUrl"/workload"
 					case \*
 						echo "$argv[2] is unknown."
 				end
@@ -125,9 +127,8 @@ if test -n "$argv[1]"
 			set -l _baseUrl (string join "/" $GCP_CONSOLE_BASE_URL "logs" "query")
 			if test -n "$argv[2]" 
 				if string match -q -r "[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}" "$argv[2]"
-					set -l _podId $argv[2] "-0"
-					set _query ";query=resource.type%3D%22k8s_container%22%0Aresource.labels.pod_name%3D%22"$_podId
-					# https://console.cloud.google.com/logs/query;query=resource.type%3D%22k8s_container%22%0Aresource.labels.pod_name%3D%2231fd66d4-71e4-4e26-9766-b86ebef558d5-0%22?authuser=0&project=bc-saas-production-us
+					set -l _podId $argv[2]"-0"
+					# figure out how to open filtered pod log
 				else
 					echo "[$argv[2]] is unknown."
 				end
